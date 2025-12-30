@@ -50,6 +50,30 @@ try {
     process.exit(1);
 }
 
+function getMetadata(filePath) {
+    try {
+        const content = fs.readFileSync(filePath, "utf-8");
+        const header = content.split("\n").slice(0, 20).join("\n"); // Read first 20 lines
+
+        const extract = (key) => {
+            const match = header.match(new RegExp(`${key}\\s*:\\s*(.*)`, "i"));
+            return match ? match[1].trim() : "Unknown";
+        };
+
+        return {
+            platform: extract("Platform"),
+            difficulty: extract("Difficulty"),
+            type: extract("Type"),
+            date: extract("Date Solved"),
+            topic: extract("Topic"),
+            problemName: extract("Problem Name"),
+            fullPath: filePath
+        };
+    } catch (e) {
+        return null;
+    }
+}
+
 if (process.argv[2] === "stats") {
     const solutionsDir = path.join(process.cwd(), "Solutions");
 
@@ -64,29 +88,27 @@ if (process.argv[2] === "stats") {
     const platforms = {};
     const difficulties = {};
     const types = {};
+    const topics = {};
     const uniqueDates = new Set();
 
     console.log("🔄 Analyzing your solutions...\n");
 
     files.forEach((file) => {
-        const content = fs.readFileSync(path.join(solutionsDir, file), "utf-8");
-        const header = content.split("\n").slice(0, 15).join("\n");
-
-        const extract = (key) => {
-            const match = header.match(new RegExp(`${key}\\s*:\\s*(.*)`));
-            return match ? match[1].trim() : "Unknown";
-        };
-
-        const p = extract("Platform");
-        const d = extract("Difficulty");
-        const t = extract("Type");
-        const date = extract("Date Solved");
+        const meta = getMetadata(path.join(solutionsDir, file));
+        if (!meta) return;
 
         totalSolved++;
-        platforms[p] = (platforms[p] || 0) + 1;
-        difficulties[d] = (difficulties[d] || 0) + 1;
-        types[t] = (types[t] || 0) + 1;
-        if (date !== "Unknown") uniqueDates.add(date);
+        platforms[meta.platform] = (platforms[meta.platform] || 0) + 1;
+        difficulties[meta.difficulty] = (difficulties[meta.difficulty] || 0) + 1;
+        types[meta.type] = (types[meta.type] || 0) + 1;
+        if (meta.date !== "Unknown") uniqueDates.add(meta.date);
+
+        if (meta.topic !== "Unknown") {
+            const topicList = meta.topic.split(",").map(t => t.trim());
+            topicList.forEach(t => {
+                if (t) topics[t] = (topics[t] || 0) + 1;
+            });
+        }
     });
 
     const sortedDates = Array.from(uniqueDates).sort().reverse();
@@ -126,8 +148,11 @@ if (process.argv[2] === "stats") {
         console.log(`   • ${key.padEnd(8)} : ${icon} ${val}`);
     });
 
-    console.log("\n📅 By Type:");
-    Object.entries(types).forEach(([key, val]) => console.log(`   • ${key.padEnd(10)} : ${val}`));
+    console.log("\n📚 Top Topics:");
+    Object.entries(topics)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .forEach(([key, val]) => console.log(`   • ${key.padEnd(14)}: ${val}`));
 
     process.exit(0);
 }
@@ -143,14 +168,24 @@ if (process.argv[2] === "open") {
     const query = process.argv.slice(3).join(" ").toLowerCase();
 
     if (!query) {
-        console.error("❌ Please provide a search term. Example: dsa open two sum");
+        console.error("❌ Please provide a search term. Example: dsa open dp");
         process.exit(1);
     }
 
+    console.log(`🔍 Searching for "${query}" in filenames and topics...`);
+
     const files = fs.readdirSync(solutionsDir).filter((f) => f.endsWith(".cpp"));
+
     const matches = files.filter((file) => {
-        const normalizedFile = file.toLowerCase().replace(/_/g, " ");
-        return normalizedFile.includes(query);
+        const normalizedFilename = file.toLowerCase().replace(/_/g, " ");
+        if (normalizedFilename.includes(query)) return true;
+
+        const meta = getMetadata(path.join(solutionsDir, file));
+        if (meta && meta.topic && meta.topic.toLowerCase().includes(query)) {
+            return true;
+        }
+
+        return false;
     });
 
     if (matches.length === 0) {
@@ -181,51 +216,35 @@ if (process.argv[2] === "open") {
 
 if (process.argv[2] === "review") {
     const solutionsDir = path.join(process.cwd(), "Solutions");
-
     if (!fs.existsSync(solutionsDir)) {
         console.error("❌ Solutions folder not found.");
         process.exit(1);
     }
-
     const files = fs.readdirSync(solutionsDir).filter((f) => f.endsWith(".cpp"));
-
     if (files.length === 0) {
         console.log("❌ No problems solved yet to review!");
         process.exit(0);
     }
 
     const randomFile = files[Math.floor(Math.random() * files.length)];
-    const content = fs.readFileSync(path.join(solutionsDir, randomFile), "utf-8");
-    const header = content.split("\n").slice(0, 15).join("\n");
-
-    const extract = (key) => {
-        const match = header.match(new RegExp(`${key}\\s*:\\s*(.*)`));
-        return match ? match[1].trim() : "Unknown";
-    };
-
-    const name = extract("Problem Name");
-    const link = extract("Problem Link");
-    const difficulty = extract("Difficulty");
-    const platform = extract("Platform");
-    const date = extract("Date Solved");
+    const meta = getMetadata(path.join(solutionsDir, randomFile));
 
     console.log("\n🎲 Time for a Review!");
     console.log("======================");
-    console.log(`📌 Problem:    ${name}`);
-    console.log(`🏢 Platform:   ${platform}`);
-    console.log(`📊 Difficulty: ${difficulty}`);
-    console.log(`📅 Solved On:  ${date}`);
-    console.log(`🔗 Link:       ${link}\n`);
+    console.log(`📌 Problem:    ${meta.problemName}`);
+    console.log(`📚 Topic:      ${meta.topic}`);
+    console.log(`🏢 Platform:   ${meta.platform}`);
+    console.log(`📊 Difficulty: ${meta.difficulty}`);
+    console.log(`📅 Solved On:  ${meta.date}`);
 
     const shouldOpen = await confirm({
-        message: "Would you like to open this solution to review the code?",
+        message: "Would you like to open this solution?",
         default: true,
     });
 
     if (shouldOpen) {
-        const fullPath = path.join(solutionsDir, randomFile);
         try {
-            execSync(`code "${fullPath}"`, { stdio: "inherit" });
+            execSync(`code "${meta.fullPath}"`, { stdio: "inherit" });
         } catch (err) {
             console.error("❌ Failed to open VS Code.");
         }
@@ -249,6 +268,10 @@ const platform = await select({
 
 const problemLink = await input({ message: "Problem link:" });
 
+const topic = await input({
+    message: "Topic(s) (e.g. Array, DP, Sorting):"
+});
+
 const problemType = await select({
     message: "Select type:",
     choices: [
@@ -268,7 +291,7 @@ const difficulty = await select({
 });
 
 console.log("\nCollected Metadata:");
-console.log({ problemName, platform, problemLink, problemType, difficulty });
+console.log({ problemName, platform, topic, difficulty });
 
 const date = new Date().toISOString().split("T")[0];
 const safeProblemName = problemName.trim().replace(/[^a-zA-Z0-9]+/g, "_");
@@ -281,6 +304,7 @@ const header =
 
 Problem Name   : ${problemName}
 Platform       : ${platform}
+Topic          : ${topic}
 Problem Link   : ${problemLink}
 Type           : ${problemType}
 Difficulty     : ${difficulty}
@@ -312,11 +336,9 @@ await input({
 });
 
 try {
-
     execSync(`git add "${filePath}"`, { stdio: "inherit" });
-    execSync(`git commit -m "Solved ${platform}: ${problemName}"`, { stdio: "inherit" });
+    execSync(`git commit -m "Solved ${platform}: ${problemName} [${topic}]"`, { stdio: "inherit" });
     execSync(`git push`, { stdio: "inherit" });
-
     console.log("✅ Solution committed and pushed successfully.");
 } catch (err) {
     console.error("❌ Git operation failed.");
