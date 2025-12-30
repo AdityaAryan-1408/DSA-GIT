@@ -6,10 +6,8 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
-// --- Configuration Setup ---
 const CONFIG_FILE = path.join(os.homedir(), ".dsa-cli-config.json");
 
-// Check if the user is running "dsa init"
 if (process.argv[2] === "init") {
     console.log("Welcome to DSA CLI Setup!");
 
@@ -17,7 +15,6 @@ if (process.argv[2] === "init") {
         message: "Enter the absolute path to your DSA repository:",
     });
 
-    // Remove quotes if the user copied path as "C:\Path"
     const cleanedPath = repoPath.replace(/['"]/g, "").trim();
 
     if (!fs.existsSync(cleanedPath)) {
@@ -33,9 +30,6 @@ if (process.argv[2] === "init") {
     process.exit(0);
 }
 
-// --- Main Application Logic ---
-
-// 1. Load Configuration
 if (!fs.existsSync(CONFIG_FILE)) {
     console.error("❌ Configuration missing. Please run 'dsa init' first to set up your repository path.");
     process.exit(1);
@@ -49,8 +43,6 @@ try {
     process.exit(1);
 }
 
-// 2. Change Working Directory (Magic Step)
-// This ensures all file creations and git commands happen inside your DSA repo
 try {
     process.chdir(config.repoPath);
 } catch (err) {
@@ -59,8 +51,7 @@ try {
     process.exit(1);
 }
 
-// --- Existing Logic Starts Here ---
-// Since we changed directory, process.cwd() is now your repo root.
+
 
 const problemName = await input({
     message: "Problem name:",
@@ -141,7 +132,6 @@ await input({
 });
 
 try {
-    // Because we used process.chdir() at the top, these commands run inside your repo
     execSync(`git add "${filePath}"`, { stdio: "inherit" });
 
     execSync(
