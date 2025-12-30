@@ -1,4 +1,3 @@
-Here is a clean, professional `README.md` for your CLI tool. You can place this file inside `Tools/dsa-cli/` or at the root of your `DSA-GIT` repo.
 
 ---
 
@@ -18,6 +17,7 @@ A personal command-line interface tool designed to streamline the workflow of so
 
 1. **Navigate to the tool directory:**
 ```bash
+
 cd Tools/dsa-cli
 
 ```
