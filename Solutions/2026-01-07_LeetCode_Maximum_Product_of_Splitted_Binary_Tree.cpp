@@ -12,7 +12,16 @@ Date Solved    : 2026-01-07
 
 #include <bits/stdc++.h>
 using namespace std;
+class TreeNode {
+   public:
+    int val;
+    TreeNode *left, *right;
 
+    TreeNode(int x) {
+        val = x;
+        left = right = nullptr;
+    }
+};
 class Solution {
    public:
     const int mod = 1e9 + 7;
