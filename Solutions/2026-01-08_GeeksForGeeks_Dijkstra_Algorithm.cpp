@@ -34,7 +34,6 @@ class Solution {
             int dis = pq.top().first;
             int node = pq.top().second;
             pq.pop();
-            if (dis > dist[node]) continue;
             for (auto it : adj[node]) {
                 int edgeWeight = it.second;
                 int adjNode = it.first;
@@ -50,6 +49,20 @@ class Solution {
 
 int main() {
     Solution s;
+    /*
+    This algo doesnt work with graphs that have a negative cycle or edge with negative weight. Because it goes into an infinite
+    loop
+    Dijkstra's Algo can be implemented using Queue, Priority Queue, and set data struture. However the Queue takes the 
+    most time with PQ taking less and Set being the fastest. 
 
+    Using Priority Queue.
+    Step 1. Have a distance array. Assign source node with 0 and everything else with Infinity.
+    Step 2. Keep a min heap which keeps the min value at top. We put the src dist and its node 0 in pq. in the order {dist, node}
+    Step 3. Remove 0 from pq and move to its neightbours with updating the distance array with min distance
+    between current distance and previous distance.
+
+    TC = O()
+    This approach gives TLE in GFG.
+    */
     return 0;
 }
