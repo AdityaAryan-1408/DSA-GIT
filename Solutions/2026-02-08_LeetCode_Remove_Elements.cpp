@@ -15,7 +15,7 @@ using namespace std;
 
 class Solution {
    public:
-    int removeElement(vector<int>& nums, int val) {
+    int removeElement(vector<int>& nums, int val) {  // 3 Passes
         int n = nums.size();
         int i = 0, j = n - 1;
         int cnt = count(nums.begin(), nums.end(), val);
@@ -37,6 +37,36 @@ class Solution {
             cnt--;
         }
         return nums.size();
+    }
+    int removeElement2(vector<int>& nums, int val) {  // 2 Passes
+        int n = nums.size();
+        int i = 0, j = n - 1;
+        int cnt = count(nums.begin(), nums.end(), val);
+        if (cnt == n) {
+            nums.clear();
+            return 0;
+        }
+        while (i < j) {
+            if (nums[i] == val) {
+                while (nums[j] == val && j > i) j--;
+                swap(nums[i], nums[j]);
+
+                j--;
+            }
+            i++;
+        }
+
+        return n - cnt;
+    }
+    int removeElement3(vector<int>& nums, int val) {  // 1 Pass
+        int k = 0;
+        for (int i = 0; i < nums.size(); i++) {
+            if (nums[i] != val) {
+                nums[k] = nums[i];
+                k++;
+            }
+        }
+        return k;
     }
 };
 
