@@ -15,13 +15,13 @@ using namespace std;
 
 class Solution {
    public:
-    int removeDuplicates(vector<int>& nums) { // STL approach
+    int removeDuplicates(vector<int>& nums) {  // STL approach
         set<int> st(nums.begin(), nums.end());
         nums.assign(st.begin(), st.end());
         return st.size();
     }
 
-    int removeDuplicates2(vector<int>& nums) { // Two Pointer approach
+    int removeDuplicates2(vector<int>& nums) {  // Two Pointer approach
         int k = 1;
         int n = nums.size();
         int i = 1;
