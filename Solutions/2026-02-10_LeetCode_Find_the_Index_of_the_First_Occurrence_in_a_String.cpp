@@ -37,6 +37,21 @@ class Solution {
         }
         return -1;
     }
+    int strStr(string h, string n) {
+        int s1 = h.size();
+        int s2 = n.size();
+        for (int i = 0; i <= s1 - s2; i++) {
+            for (int j = 0; j < s2; j++) {
+                if (h[i + j] != n[j]) {
+                    break;
+                }
+                if (j == s2 - 1) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
 };
 
 int main() {
