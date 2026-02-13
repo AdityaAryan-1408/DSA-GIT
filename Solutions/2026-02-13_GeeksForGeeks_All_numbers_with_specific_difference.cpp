@@ -4,7 +4,7 @@ Problem Name   : All numbers with specific difference
 Platform       : GeeksForGeeks
 Topic          : Binary Search
 Problem Link   : https://www.geeksforgeeks.org/problems/all-numbers-with-specific-difference3558/1
-Type           : Practice
+Type           : POTD
 Difficulty     : Hard
 Date Solved    : 2026-02-13
 
