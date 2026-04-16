@@ -1,0 +1,34 @@
+/*
+
+Problem Name   : Climbing Stairs
+Platform       : LeetCode
+Topic          : Math, Dynamic Programming, Memoization
+Problem Link   : https://leetcode.com/problems/climbing-stairs/
+Type           : Practice
+Difficulty     : Easy
+Date Solved    : 2026-04-16
+Approach       : Memoization
+Time           : O(N)
+Space          : O(N)
+
+*/
+
+class Solution {
+public:
+    int  helper(int n, vector<int>&dp) {
+        if (n < 0)
+            return 0;
+        if (n == 0) {
+            return 1 ;
+        }
+
+        if(dp[n] != -1) return dp[n];
+        int one = helper(n - 1, dp);
+        int two = helper(n - 2, dp);
+        return dp[n] = one + two;
+    }
+    int climbStairs(int n) {
+        vector<int> dp(n + 1, -1);
+        return helper(n, dp);   
+    }
+};
