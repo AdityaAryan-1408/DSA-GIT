@@ -1,0 +1,20 @@
+/*
+
+Problem Name   : Immediate Food Delivery II
+Platform       : LeetCode
+Topic          : Database
+Problem Link   : https://leetcode.com/problems/immediate-food-delivery-ii/submissions/2003655665/
+Type           : Practice
+Difficulty     : Medium
+Date Solved    : 2026-05-15
+
+*/
+
+SELECT 
+ROUND(SUM(IF(order_date = customer_pref_delivery_date, 1, 0)) * 100  / COUNT(DISTINCT customer_id), 2) AS immediate_percentage
+FROM Delivery
+WHERE (customer_id, order_date) IN (
+    SELECT customer_id, MIN(order_date) AS first_order_date
+    FROM Delivery
+    GROUP BY customer_id
+)
